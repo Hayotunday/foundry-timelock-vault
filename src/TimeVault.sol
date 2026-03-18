@@ -11,6 +11,7 @@ contract TimeVault {
   error TimeVault__DepositAmountMustBeGreaterThanZero();
   error TimeVault__LockDurationMustBeGreaterThanZero();
   error TimeVault__WithdrawalAddressNotAllowed();
+  error TimeVault__WithdrawalFailed();
 
   /// @notice A struct to hold the details of a user's deposit.
   struct Vault {
@@ -55,7 +56,11 @@ contract TimeVault {
       revert TimeVault__DepositNotMatured(userVault.unlockTime);
     }
     delete vaults[msg.sender];
-    payable(msg.sender).transfer(userVault.amount);
+    (bool success,) = (msg.sender).call{value: userVault.amount}("");
+    if (!success) {
+      revert TimeVault__WithdrawalFailed();
+    }
+
     emit EthWithdrawn(msg.sender, userVault.amount);
   }
 }
