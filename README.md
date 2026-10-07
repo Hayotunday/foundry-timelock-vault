@@ -1,66 +1,78 @@
-## Foundry
+# Foundry Timelock Vault
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+A Foundry-based time-locked ETH vault that enforces withdrawal restrictions until a configured lock duration has elapsed. This project demonstrates how to build trustless custody where funds remain inaccessible until a predefined timestamp.
 
-Foundry consists of:
+## What the product does
+This contract lets users deposit ETH and specify a lock duration. The contract records the deposit amount and calculates an unlock time based on the current block timestamp plus the lock duration. Users can only withdraw their deposit after the unlock time has been reached.
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## The problem it solves
+Sometimes users need to lock funds for a set period to enforce commitment or prevent accidental transfers. A timelock vault provides transparent, on-chain assurance that funds will remain locked without relying on a custodian. This project models that pattern.
 
-## Documentation
+## My specific contribution
+I implemented the deposit and withdrawal logic, unlock time verification, and deployment configuration. The focus is on making the timelock logic clear and testable.
 
-https://book.getfoundry.sh/
+## Architecture
+The repository includes:
 
-## Usage
+- `src/TimeVault.sol` — time-locked vault logic
+- `script/DeployTimeVault.s.sol` — deployment script
+- `test/TimeVaultTest.t.sol` — timelock enforcement tests
+- `lib/` — Foundry dependencies
+- `foundry.toml` — Foundry configuration
 
-### Build
+## Technologies
+- Solidity
+- Foundry
+- Forge testing
+- Time-based access control
+- Vault and escrow patterns
 
-```shell
-$ forge build
-```
+## Important technical decisions
+- Deposits are stored in a mapping with a struct that includes the amount and unlock time.
+- Withdrawal is only permitted after block.timestamp reaches or exceeds the unlock time.
+- The contract prevents multiple active deposits per address to avoid confusion about which deposit is locked.
+- Custom errors make invalid deposit and withdrawal states explicit and testable.
+- The design is intentionally minimal to keep focus on timelock enforcement.
 
-### Test
+## Key features
+- Time-locked ETH deposit and withdrawal
+- User-specified lock duration
+- Unlock time verification before withdrawals
+- Protection against duplicate active deposits
+- Event-driven auditing of deposits and withdrawals
+- Clear error states for invalid operations
 
-```shell
-$ forge test
-```
+## Screenshots
+No screenshots are included.
 
-### Format
+## Live demo
+No live deployment is included in the repository.
 
-```shell
-$ forge fmt
-```
+## Challenges and solutions
+The main challenge is preventing users from withdrawing too early. This is solved by comparing the current block timestamp against the stored unlock time and reverting if the lock period has not yet elapsed.
 
-### Gas Snapshots
+Another challenge is handling edge cases like zero-amount deposits. The solution is explicit validation at deposit time.
 
-```shell
-$ forge snapshot
-```
+## Setup instructions
+```bash
+# Install Foundry
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
 
-### Anvil
+# Clone
+git clone https://github.com/Hayotunday/foundry-timelock-vault.git
+cd foundry-timelock-vault
 
-```shell
-$ anvil
-```
+# Install dependencies
+forge install
 
-### Deploy
+# Build
+forge build
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+# Run tests
+forge test
 
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+# Optional
+forge fmt
+forge snapshot
 ```
